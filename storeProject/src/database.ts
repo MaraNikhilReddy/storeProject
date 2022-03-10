@@ -1,26 +1,34 @@
-import express, { Request, Response } from 'express';
-import bodyParser from 'body-parser'
-import cors from "cors";
-import userRouter from './handlers/user';
-import OrderRouter from './handlers/order';
-import productRouter from './handlers/product';
+import dotenv from "dotenv";
+import { Pool } from "pg";
 
-const app: express.Application = express()
-const address: string = "0.0.0.0:3000"
+dotenv.config();
 
-app.use(bodyParser.json())
+const {
+    POSTGRES_HOST,
+    POSTGRES_DB,
+    POSTGRES_USER,
+    POSTGRES_PASSWORD,
+    ENV,
+    POSTGRES_TEST,
+}=process.env;
 
+let client:Pool;
+if(ENV=="test"){
+    client=new Pool({
+        host: POSTGRES_HOST,
+        database: POSTGRES_TEST,
+        user: POSTGRES_USER,
+        password: POSTGRES_PASSWORD
+    });
+}
 
+else{
+    client=new Pool({
+        host: POSTGRES_HOST,
+        database: POSTGRES_DB,
+        user: POSTGRES_USER,
+        password: POSTGRES_PASSWORD
+    });
+}
 
-app.get('/', function (req: Request, res: Response) {
-    res.send('server started')
-})
-userRouter(app);
-OrderRouter(app);
-productRouter(app);
-
-app.listen(3000, function () {
-    console.log(`starting app on: ${address}`)
-})
-
-export default app;
+export default client;
